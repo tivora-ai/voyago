@@ -1,34 +1,51 @@
 "use client";
-import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Product, Size } from "@/data/products";
 import { formatPrice } from "@/lib/format";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
+
 export default function ProductCard({ product }: { product: Product }) {
   const [idx, setIdx] = useState(0);
+  const [selectedSize, setSelectedSize] = useState<Size>(product.sizes[0]);
   const img = product.images[idx] ?? product.images[0];
-  const cycle = (dir: -1 | 1) => () => setIdx((i) => (i + dir + product.images.length) % product.images.length);
+  const router = useRouter();
   const { addToCart, setOpen } = useCart();
+  
+  const cycle = (dir: -1 | 1) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIdx((i) => (i + dir + product.images.length) % product.images.length);
+  };
+  
   const SizeButton = ({ s }: { s: Size }) => (
-    <Link href={`/product/${product.slug}?size=${s}`} className="px-2 py-1 border rounded-md text-xs hover:bg-sand-200 size-link">{s}</Link>
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setSelectedSize(s);
+      }}
+      className={`px-2 py-1 border rounded-md text-xs transition ${
+        selectedSize === s
+          ? "bg-ocean-700 text-white border-ocean-700"
+          : "border-neutral-300 hover:bg-sand-200"
+      }`}
+    >
+      {s}
+    </button>
   );
+  
   return (
     <div
       className="group border rounded-2xl shadow-sm overflow-hidden bg-white hover:shadow-[0_4px_12px_var(--voyago-brand,#d5ba74)/20] transition-transform duration-500 hover:-translate-y-1 cursor-pointer"
-      onClick={e => {
-        // Prevent navigation if a size button was clicked
-        if ((e.target as HTMLElement).closest('.size-link')) return;
-        window.location.href = `/product/${product.slug}`;
-      }}
+      onClick={() => router.push(`/product/${product.slug}`)}
     >
       <div className="relative aspect-square overflow-hidden">
         <Image src={img} alt={product.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
-        <button onClick={cycle(-1)} className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 bg-foam/80 rounded-full p-1">
+        <button onClick={cycle(-1)} className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 bg-foam/80 rounded-full p-1 hover:bg-foam transition-opacity">
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <button onClick={cycle(1)} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 bg-foam/80 rounded-full p-1">
+        <button onClick={cycle(1)} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 bg-foam/80 rounded-full p-1 hover:bg-foam transition-opacity">
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>
@@ -50,7 +67,7 @@ export default function ProductCard({ product }: { product: Product }) {
               name: product.name,
               priceCents: product.priceCents,
               slug: product.slug,
-              size: product.sizes[0],
+              size: selectedSize,
               image: product.images[0],
               quantity: 1,
             });

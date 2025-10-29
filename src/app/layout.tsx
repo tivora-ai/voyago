@@ -7,7 +7,7 @@ import AppContent from "@/components/layout/AppContent";
 import { CartProvider } from "@/components/cart/CartContext";
 
 export const metadata: Metadata = {
-  title: "Voyago — A beautiful journey in a fashion of sea",
+  title: "Voyago",
   description: "Nautical-inspired modern clothing.",
 };
 

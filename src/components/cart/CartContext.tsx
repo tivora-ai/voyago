@@ -15,6 +15,7 @@ export type CartContextType = {
   items: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string, size: string) => void;
+  updateQuantity: (id: string, size: string, quantity: number) => void;
   clearCart: () => void;
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -40,13 +41,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
     setOpen(true);
   };
+  
   const removeFromCart = (id: string, size: string) => {
     setItems((prev) => prev.filter((i) => !(i.id === id && i.size === size)));
   };
+  
+  const updateQuantity = (id: string, size: string, quantity: number) => {
+    setItems((prev) => {
+      const idx = prev.findIndex((i) => i.id === id && i.size === size);
+      if (idx === -1) return prev;
+      const copy = [...prev];
+      copy[idx].quantity = quantity;
+      return copy;
+    });
+  };
+  
   const clearCart = () => setItems([]);
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, clearCart, open, setOpen }}>
+    <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, open, setOpen }}>
       {children}
     </CartContext.Provider>
   );
